@@ -84,6 +84,18 @@ pipeline {
         //         )
         //     }
         // }
+        stage('Trivy File System Scan') {
+            steps {
+                dir('server') {
+                    sh '''
+                        trivy fs \
+                        --scanners vuln,secret,misconfig \
+                        --severity HIGH,CRITICAL \
+                        .
+                    '''
+                }
+            }
+        }
         stage('Package') {
             steps {
                 dir('server') {
