@@ -67,7 +67,23 @@ pipeline {
                 }
             }
         }
-
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck(
+                    odcInstallation: 'dependency-check',
+                    additionalArguments: '--scan server --format XML --format HTML',
+                    stopBuild: true
+                )
+            }
+        }
+        
+        stage('Publish Dependency Check Report') {
+            steps {
+                dependencyCheckPublisher(
+                    pattern: '**/dependency-check-report.xml'
+                )
+            }
+        }
         stage('Package') {
             steps {
                 dir('server') {
