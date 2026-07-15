@@ -104,34 +104,43 @@ pipeline {
             }
         }
    
-    stage('Docker Build') {
-        steps {
-            dir('server') {
-                sh 'docker build -t vinodjalagam/maven-project:${BUILD_NUMBER} .'
+        stage('Docker Build') {
+            steps {
+                dir('server') {
+                    sh 'docker build -t vinodjalagam/maven-project:${BUILD_NUMBER} .'
+                }
             }
+        }
+        stage('Trivy Image Scan') {
+        steps {
+            sh '''
+            trivy image \
+            --severity HIGH,CRITICAL \
+            vinodjalagam/maven-project:${BUILD_NUMBER}
+            '''
         }
     }
 
-    stage('Docker Login') {
-        steps {
-            withCredentials([usernamePassword(
-                credentialsId: 'dockerhub',
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )]) {
-                sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                '''
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+                }
             }
         }
-    }
 
-    stage('Docker Push') {
-        steps {
-            sh 'docker push vinodjalagam/maven-project:${BUILD_NUMBER}'
+        stage('Docker Push') {
+            steps {
+                sh 'docker push vinodjalagam/maven-project:${BUILD_NUMBER}'
+            }
         }
-    }
- }
+     }
 
     post {
 
