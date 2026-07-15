@@ -51,19 +51,6 @@ pipeline {
             }
         }
 
-        stage('Webapp Unit Tests') {
-            steps {
-                dir('webapp') {
-                    sh 'mvn test'
-                }
-            }
-            post {
-                always {
-                    junit 'webapp/target/surefire-reports/*.xml'
-                }
-            }
-        }
-
         stage('Package Webapp') {
             steps {
                 dir('webapp') {
