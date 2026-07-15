@@ -15,10 +15,50 @@
   <name>Server</name>
   <description>Logic.</description>
 
-  <build>
+<build>
     <finalName>${project.artifactId}</finalName>
-  </build>
 
+    <plugins>
+
+        <!-- JUnit Test Runner -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.5.2</version>
+        </plugin>
+
+        <!-- JaCoCo Code Coverage -->
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.12</version>
+
+            <executions>
+
+                <!-- Attach JaCoCo Agent -->
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+
+                <!-- Generate Coverage Report -->
+                <execution>
+                    <id>report</id>
+                    <phase>verify</phase>
+
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+
+            </executions>
+
+        </plugin>
+
+    </plugins>
+
+</build>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

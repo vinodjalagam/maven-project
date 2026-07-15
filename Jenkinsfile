@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven'
         jdk 'jdk21'
+        maven 'maven'
     }
 
     stages {
@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Compile Server') {
+        stage('Compile') {
             steps {
                 dir('server') {
                     sh 'mvn clean compile'
@@ -22,12 +22,13 @@ pipeline {
             }
         }
 
-        stage('Server Unit Tests') {
+        stage('Unit Tests') {
             steps {
                 dir('server') {
                     sh 'mvn test'
                 }
             }
+
             post {
                 always {
                     junit 'server/target/surefire-reports/*.xml'
@@ -35,43 +36,59 @@ pipeline {
             }
         }
 
-        stage('Package Server') {
+        stage('JaCoCo Coverage') {
+            steps {
+                dir('server') {
+                    sh 'mvn verify'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('server') {
+
+                    withSonarQubeEnv('sonarqube') {
+
+                        sh '''
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=maven-project \
+                        -Dsonar.projectName=maven-project
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Package') {
             steps {
                 dir('server') {
                     sh 'mvn package -DskipTests'
                 }
             }
         }
-
-        // stage('Compile Webapp') {
-        //     steps {
-        //         dir('webapp') {
-        //             sh 'mvn clean compile'
-        //         }
-        //     }
-        // }
-
-    //     stage('Package Webapp') {
-    //         steps {
-    //             dir('webapp') {
-    //                 sh 'mvn package -DskipTests'
-    //             }
-    //         }
-    //     }
-     }
+    }
 
     post {
+
+        always {
+            archiveArtifacts artifacts: 'server/target/*.jar'
+        }
+
         success {
-            echo "✅ Build Successful"
+            echo "Pipeline Successful"
         }
 
         failure {
-            echo "❌ Build Failed"
-        }
-
-        always {
-            archiveArtifacts artifacts: 'server/target/*.jar', fingerprint: true
-            // archiveArtifacts artifacts: 'webapp/target/*.jar', fingerprint: true
+            echo "Pipeline Failed"
         }
     }
 }
