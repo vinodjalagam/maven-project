@@ -43,22 +43,22 @@ pipeline {
             }
         }
 
-        stage('Compile Webapp') {
-            steps {
-                dir('webapp') {
-                    sh 'mvn clean compile'
-                }
-            }
-        }
+        // stage('Compile Webapp') {
+        //     steps {
+        //         dir('webapp') {
+        //             sh 'mvn clean compile'
+        //         }
+        //     }
+        // }
 
-        stage('Package Webapp') {
-            steps {
-                dir('webapp') {
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        }
-    }
+    //     stage('Package Webapp') {
+    //         steps {
+    //             dir('webapp') {
+    //                 sh 'mvn package -DskipTests'
+    //             }
+    //         }
+    //     }
+    // }
 
     post {
         success {
@@ -71,7 +71,7 @@ pipeline {
 
         always {
             archiveArtifacts artifacts: 'server/target/*.jar', fingerprint: true
-            archiveArtifacts artifacts: 'webapp/target/*.jar', fingerprint: true
+            // archiveArtifacts artifacts: 'webapp/target/*.jar', fingerprint: true
         }
     }
 }
