@@ -103,7 +103,7 @@ pipeline {
                 }
             }
         }
-    }
+   
     stage('Docker Build') {
         steps {
             dir('server') {
@@ -131,6 +131,7 @@ pipeline {
             sh 'docker push vinodjalagam/maven-project:${BUILD_NUMBER}'
         }
     }
+ }
 
     post {
 
