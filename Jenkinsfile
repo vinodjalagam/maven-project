@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         maven 'maven'
-        jdk 'jdk17'
+        jdk 'jdk21'
     }
 
     stages {
@@ -14,36 +14,49 @@ pipeline {
             }
         }
 
-        stage('Compile') {
+        stage('Compile Server') {
             steps {
                 dir('server') {
-                    sh 'mvn -DskipTests clean package'
+                    sh 'mvn clean compile'
                 }
             }
         }
-        
 
-        stage('Unit Tests') {
+        stage('Server Unit Tests') {
             steps {
                 dir('server') {
                     sh 'mvn test'
                 }
             }
-
-        stage('Compile') {
-            steps {
-                dir('webapp') {
-                    sh 'mvn -DskipTests clean package'
+            post {
+                always {
+                    junit 'server/target/surefire-reports/*.xml'
                 }
             }
         }
-        stage('Unit Tests') {
+
+        stage('Package Server') {
+            steps {
+                dir('server') {
+                    sh 'mvn package -DskipTests'
+                }
+            }
+        }
+
+        stage('Compile Webapp') {
+            steps {
+                dir('webapp') {
+                    sh 'mvn clean compile'
+                }
+            }
+        }
+
+        stage('Webapp Unit Tests') {
             steps {
                 dir('webapp') {
                     sh 'mvn test'
                 }
             }
-
             post {
                 always {
                     junit 'webapp/target/surefire-reports/*.xml'
@@ -51,10 +64,16 @@ pipeline {
             }
         }
 
+        stage('Package Webapp') {
+            steps {
+                dir('webapp') {
+                    sh 'mvn package -DskipTests'
+                }
+            }
+        }
     }
 
     post {
-
         success {
             echo "✅ Build Successful"
         }
@@ -65,8 +84,6 @@ pipeline {
 
         always {
             archiveArtifacts artifacts: 'server/target/*.jar', fingerprint: true
-        }
-        always {
             archiveArtifacts artifacts: 'webapp/target/*.jar', fingerprint: true
         }
     }
