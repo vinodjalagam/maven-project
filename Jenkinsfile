@@ -180,8 +180,32 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'server/target/*.jar'
             archiveArtifacts artifacts: 'reports/*.html', fingerprint: true
+                    
+            emailext(
+                subject: "Build #${BUILD_NUMBER} - Trivy Security Report",
+                body: """
+                <h2>Jenkins Build: ${JOB_NAME}</h2>
+    
+                <p><b>Build Number:</b> ${BUILD_NUMBER}</p>
+    
+                <p><b>Status:</b> ${currentBuild.currentResult}</p>
+    
+                <p>Attached are the Trivy Image Scan Reports.</p>
+    
+                <ul>
+                    <li>Full Vulnerability Report</li>
+                    <li>High & Critical Vulnerability Report</li>
+                </ul>
+    
+                Regards,<br>
+                Jenkins CI/CD
+                """,
+                mimeType: 'text/html',
+                to: 'vinodjalagam477@gmail.com',
+                attachmentsPattern: 'reports/*.html'
+                )
 
-        }
+       }
 
         success {
             echo "Pipeline Successful"
