@@ -25,6 +25,9 @@ pipeline {
                     ).trim()
 
                     env.IMAGE = "${IMAGE_NAME}:spring-${BUILD_NUMBER}-${DATE}"
+                    currentBuild.displayName = "spring-${BUILD_NUMBER}-${DATE}"
+                    currentBuild.description = "Docker Image: ${env.IMAGE}"
+                    currentBuild.displayName = env.IMAGE
 
                     echo "Docker Image: ${env.IMAGE}"
                 }
