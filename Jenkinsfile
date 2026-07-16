@@ -6,7 +6,7 @@ pipeline {
         maven 'maven'
     }
     environment {
-        IMAGE = "vinodjalagam/maven-project"
+        IMAGE_NAME = "vinodjalagam/maven-project"
 }
 
     stages {
