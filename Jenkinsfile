@@ -84,16 +84,37 @@ pipeline {
         //         )
         //     }
         // }
-        stage('Trivy File System Scan') {
+        // stage('Trivy File System Scan') {
+        //     steps {
+        //         dir('server') {
+        //             sh '''
+        //                 trivy fs \
+        //                 --scanners vuln,secret,misconfig \
+        //                 --severity HIGH,CRITICAL \
+        //                 .
+        //             '''
+        //         }
+        //     }
+        // }
+        stage('Trivy Image Scan') {
             steps {
-                dir('server') {
-                    sh '''
-                        trivy fs \
-                        --scanners vuln,secret,misconfig \
-                        --severity HIGH,CRITICAL \
-                        .
-                    '''
-                }
+                sh '''
+                    mkdir -p ${WORKSPACE}/reports
+                    mkdir -p ~/.trivy
+        
+                    # Download HTML template if it doesn't exist
+                    if [ ! -f ~/.trivy/html.tpl ]; then
+                        wget -q -O ~/.trivy/html.tpl \
+                        https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+                    fi
+        
+                    # Scan the Docker image and generate HTML report
+                    trivy image \
+                        --format template \
+                        --template "@$HOME/.trivy/html.tpl" \
+                        -o ${WORKSPACE}/reports/trivy-image-report.html \
+                        vinodjalagam/maven-project:${BUILD_NUMBER}
+                '''
             }
         }
         stage('Package') {
@@ -112,14 +133,14 @@ pipeline {
             }
         }
         stage('Trivy Image Scan') {
-        steps {
-            sh '''
-            trivy image \
-            --severity HIGH,CRITICAL \
-            vinodjalagam/maven-project:${BUILD_NUMBER}
-            '''
+            steps {
+                sh '''
+                trivy image \
+                --severity HIGH,CRITICAL \
+                vinodjalagam/maven-project:${BUILD_NUMBER}
+                '''
+            }
         }
-    }
 
         stage('Docker Login') {
             steps {
@@ -146,6 +167,8 @@ pipeline {
 
         always {
             archiveArtifacts artifacts: 'server/target/*.jar'
+            archiveArtifacts artifacts: 'reports/trivy-image-report.html', fingerprint: true
+
         }
 
         success {
