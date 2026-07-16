@@ -132,12 +132,23 @@ pipeline {
                         wget -q -O ~/.trivy/html.tpl \
                         https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
                     fi
+
+                    echo "Generating Full Trivy Report..."
         
                     # Scan the Docker image and generate HTML report
                     trivy image \
                         --format template \
                         --template "@$HOME/.trivy/html.tpl" \
                         -o ${WORKSPACE}/reports/trivy-image-report.html \
+                        vinodjalagam/maven-project:${BUILD_NUMBER}
+                        
+                    echo "Generating HIGH & CRITICAL Report..."
+
+                    trivy image \
+                        --severity HIGH,CRITICAL \
+                        --format template \
+                        --template "@$HOME/.trivy/html.tpl" \
+                        -o ${WORKSPACE}/reports/trivy-report-high-critical.html \
                         vinodjalagam/maven-project:${BUILD_NUMBER}
                 '''
             }
@@ -168,7 +179,7 @@ pipeline {
 
         always {
             archiveArtifacts artifacts: 'server/target/*.jar'
-            archiveArtifacts artifacts: 'reports/trivy-image-report.html', fingerprint: true
+            archiveArtifacts artifacts: 'reports/*.html', fingerprint: true
 
         }
 
