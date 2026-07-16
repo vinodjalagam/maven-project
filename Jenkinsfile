@@ -5,6 +5,9 @@ pipeline {
         jdk 'jdk21'
         maven 'maven'
     }
+    environment {
+        IMAGE = "vinodjalagam/maven-project:${BUILD_NUMBER}-$(date +%d%m%Y)"
+}
 
     stages {
 
@@ -108,7 +111,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('server') {
-                    sh 'docker build -t vinodjalagam/maven-project:${BUILD_NUMBER} .'
+                    sh 'docker build -t $IMAGE .'
                 }
             }
         }
@@ -140,7 +143,7 @@ pipeline {
                         --format template \
                         --template "@$HOME/.trivy/html.tpl" \
                         -o ${WORKSPACE}/reports/trivy-image-report.html \
-                        vinodjalagam/maven-project:${BUILD_NUMBER}
+                        $IMAGE
                         
                     echo "Generating HIGH & CRITICAL Report..."
 
@@ -149,7 +152,7 @@ pipeline {
                         --format template \
                         --template "@$HOME/.trivy/html.tpl" \
                         -o ${WORKSPACE}/reports/trivy-report-high-critical.html \
-                        vinodjalagam/maven-project:${BUILD_NUMBER}
+                        $IMAGE
                 '''
             }
         }
@@ -170,7 +173,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                sh 'docker push vinodjalagam/maven-project:${BUILD_NUMBER}'
+                sh 'docker push $IMAGE'
             }
         }
      }
@@ -185,6 +188,7 @@ pipeline {
                 subject: "Build #${BUILD_NUMBER} - Trivy Security Report",
                 body: """
                 <h2>Jenkins Build: ${JOB_NAME}</h2>
+                <h2>Docker Image: ${IMAGE}</h2>
     
                 <p><b>Build Number:</b> ${BUILD_NUMBER}</p>
     
