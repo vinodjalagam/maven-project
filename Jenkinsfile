@@ -6,7 +6,7 @@ pipeline {
         maven 'maven'
     }
     environment {
-        IMAGE = "vinodjalagam/maven-project:${BUILD_NUMBER}-$(date +%d%m%Y)"
+        IMAGE = "vinodjalagam/maven-project"
 }
 
     stages {
@@ -14,6 +14,20 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+        stage('Set Image Tag') {
+            steps {
+                script {
+                    def DATE = sh(
+                        script: 'date +%d%m%Y',
+                        returnStdout: true
+                    ).trim()
+
+                    env.IMAGE = "${IMAGE_NAME}:spring-${BUILD_NUMBER}-${DATE}"
+
+                    echo "Docker Image: ${env.IMAGE}"
+                }
             }
         }
 
