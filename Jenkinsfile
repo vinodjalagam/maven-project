@@ -84,16 +84,41 @@ pipeline {
         //         )
         //     }
         // }
-        // stage('Trivy File System Scan') {
+        stage('Trivy File System Scan') {
+            steps {
+                dir('server') {
+                    sh '''
+                        trivy fs \
+                        --scanners vuln,secret,misconfig \
+                        --severity HIGH,CRITICAL \
+                        .
+                    '''
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir('server') {
+                    sh 'mvn package -DskipTests'
+                }
+            }
+        }
+   
+        stage('Docker Build') {
+            steps {
+                dir('server') {
+                    sh 'docker build -t vinodjalagam/maven-project:${BUILD_NUMBER} .'
+                }
+            }
+        }
+        // stage('Trivy Image Scan') {
         //     steps {
-        //         dir('server') {
-        //             sh '''
-        //                 trivy fs \
-        //                 --scanners vuln,secret,misconfig \
-        //                 --severity HIGH,CRITICAL \
-        //                 .
-        //             '''
-        //         }
+        //         sh '''
+        //         trivy image \
+        //         --severity HIGH,CRITICAL \
+        //         vinodjalagam/maven-project:${BUILD_NUMBER}
+        //         '''
         //     }
         // }
         stage('Trivy Image Scan') {
@@ -114,30 +139,6 @@ pipeline {
                         --template "@$HOME/.trivy/html.tpl" \
                         -o ${WORKSPACE}/reports/trivy-image-report.html \
                         vinodjalagam/maven-project:${BUILD_NUMBER}
-                '''
-            }
-        }
-        stage('Package') {
-            steps {
-                dir('server') {
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        }
-   
-        stage('Docker Build') {
-            steps {
-                dir('server') {
-                    sh 'docker build -t vinodjalagam/maven-project:${BUILD_NUMBER} .'
-                }
-            }
-        }
-        stage('Trivy Image Scan') {
-            steps {
-                sh '''
-                trivy image \
-                --severity HIGH,CRITICAL \
-                vinodjalagam/maven-project:${BUILD_NUMBER}
                 '''
             }
         }
