@@ -193,11 +193,19 @@ pipeline {
                 sh 'docker push $IMAGE'
             }
         }
-        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-        sh '''
-            kubectl get nodes
-            helm upgrade --install ...
-        '''
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh '''
+                        kubectl get nodes
+                        helm version
+        
+                        // helm upgrade --install springboot ./helm/spring-boot \
+                        //     --set image.repository=$IMAGE_REPOSITORY \
+                        //     --set image.tag=$IMAGE_TAG
+                    '''
+                }
+            }
         }
      }
 
