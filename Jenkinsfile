@@ -193,6 +193,12 @@ pipeline {
                 sh 'docker push $IMAGE'
             }
         }
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+        sh '''
+            kubectl get nodes
+            helm upgrade --install ...
+        '''
+        }
      }
 
     post {
