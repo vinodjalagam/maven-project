@@ -6,7 +6,7 @@ pipeline {
         maven 'maven'
     }
     environment {
-        IMAGE_NAME = "vinodjalagam/maven-project"
+         IMAGE_REPOSITORY  = "vinodjalagam/maven-project"
 }
 
     stages {
@@ -24,12 +24,14 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    env.IMAGE = "${IMAGE_NAME}:spring-${BUILD_NUMBER}-${DATE}"
-                    // currentBuild.displayName = "spring-${BUILD_NUMBER}-${DATE}"
-                    currentBuild.description = env.IMAGE
-                    // currentBuild.displayName = env.IMAGE
-
-                    echo "Docker Image: ${env.IMAGE}"
+                        env.IMAGE_TAG = "spring-${BUILD_NUMBER}-${DATE}"
+                        env.IMAGE = "${IMAGE_REPOSITORY}:${IMAGE_TAG}"
+            
+                        currentBuild.description = env.IMAGE
+            
+                        echo "Image Repository: ${IMAGE_REPOSITORY}"
+                        echo "Image Tag: ${IMAGE_TAG}"
+                        echo "Docker Image: ${IMAGE}"
                 }
             }
         }
@@ -200,9 +202,9 @@ pipeline {
                         kubectl get nodes
                         helm version
         
-                        // helm upgrade --install springboot ./helm/spring-boot \
-                        //     --set image.repository=$IMAGE_REPOSITORY \
-                        //     --set image.tag=$IMAGE_TAG
+                        helm upgrade --install springboot ./helm/spring-boot \
+                          --set image.repository=$IMAGE_REPOSITORY \
+                          --set image.tag=$IMAGE_TAG
                     '''
                 }
             }
