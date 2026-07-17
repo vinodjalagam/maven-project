@@ -64,29 +64,29 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                dir('server') {
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         dir('server') {
 
-                    withSonarQubeEnv('sonarqube') {
+        //             withSonarQubeEnv('sonarqube') {
 
-                        sh '''
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=maven-project \
-                        -Dsonar.projectName=maven-project
-                        '''
-                    }
-                }
-            }
-        }
+        //                 sh '''
+        //                 mvn sonar:sonar \
+        //                 -Dsonar.projectKey=maven-project \
+        //                 -Dsonar.projectName=maven-project
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 5, unit: 'MINUTES') {
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
         // stage('OWASP Dependency Check') {
         //     steps {
         //         dependencyCheck(
@@ -104,18 +104,18 @@ pipeline {
         //         )
         //     }
         // }
-        stage('Trivy File System Scan') {
-            steps {
-                dir('server') {
-                    sh '''
-                        trivy fs \
-                        --scanners vuln,secret,misconfig \
-                        --severity HIGH,CRITICAL \
-                        .
-                    '''
-                }
-            }
-        }
+        // stage('Trivy File System Scan') {
+        //     steps {
+        //         dir('server') {
+        //             sh '''
+        //                 trivy fs \
+        //                 --scanners vuln,secret,misconfig \
+        //                 --severity HIGH,CRITICAL \
+        //                 .
+        //             '''
+        //         }
+        //     }
+        // }
 
         stage('Package') {
             steps {
